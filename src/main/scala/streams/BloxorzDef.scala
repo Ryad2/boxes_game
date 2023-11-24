@@ -2,7 +2,8 @@ package streams
 
 /** Bloxorz game definition
   */
-trait BloxorzDef extends GameDef:
+trait
+BloxorzDef extends GameDef:
 
   /** The target position where the state has to go. This value is left
     * abstract.
@@ -16,7 +17,7 @@ trait BloxorzDef extends GameDef:
     */
   def startPos: Pos
   /** @inheritdoc */
-  override def startState: BloxorzState = BloxorzState(Pos(0, 0), Pos(0, 0)) // FIX ME
+  override def startState: BloxorzState = BloxorzState(startPos, startPos) // FIX ME
 
   /** In Bloxorz, a state is represented by the position of the two cubes that
     * it consists of. We make sure that `b1` is lexicographically smaller than
@@ -64,12 +65,15 @@ trait BloxorzDef extends GameDef:
     def isStanding: Boolean = b1 == b2
     /** @inheritdoc */
     override def done: Boolean =
-      false // FIX ME
+      goal == b1 && isStanding
     /** @inheritdoc */
     override def neighbors: List[(State, Move)] =
-      List() // FIX ME
+      List((left, Move.Left), (right, Move.Right), (up, Move.Up), (down, Move.Down))
     /** @inheritdoc */
     override def legalNeighbors: List[(State, Move)] =
-      neighbors // FIX ME
+      this.neighbors.filter(  (s, _) => s.isLegal    )
     /** @inheritdoc */
-    override def isLegal: Boolean = true // FIX ME
+    override def isLegal: Boolean =  terrain(b1) && terrain(b2)
+
+
+

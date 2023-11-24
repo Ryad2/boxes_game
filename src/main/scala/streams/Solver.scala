@@ -1,5 +1,10 @@
 package streams
 
+import streams.Bloxorz.InfiniteLevel.goal
+import sun.jvm.hotspot.opto.Block
+
+import scala.collection.immutable.BitSet.empty.foreach
+
 /** This component implements the solver for the Bloxorz game
   */
 trait Solver extends GameDef:
@@ -18,13 +23,22 @@ trait Solver extends GameDef:
     * inside the terrain.
     */
   def neighborsWithHistory(s: State, history: List[Move]): LazyList[(State, List[Move])] =
-    LazyList.empty // FIX ME
+    s.legalNeighbors.to(LazyList).map { case (nextState, move) =>
+      (nextState, move :: history)
+    }
+
+
   /** This function returns the list of neighbors without the block positions
     * that have already been explored. We will use it to make sure that we don't
     * explore circular paths.
     */
+
   def newNeighborsOnly(neighbors: LazyList[(State, List[Move])], explored: Set[State]): LazyList[(State, List[Move])] =
-    neighbors // FIX ME
+    neighbors.filterNot ( (state, _) => explored.contains(state) )
+
+
+
+
   /** The function `from` returns the lazy list of all possible paths that can
     * be followed, starting at the `head` of the `initial` lazy list.
     *
@@ -47,16 +61,28 @@ trait Solver extends GameDef:
     * lazy list.
     */
   def from(initial: LazyList[(State, List[Move])], explored: Set[State]): LazyList[(State, List[Move])] =
-    LazyList.empty // FIX ME
+    if initial.isEmpty then LazyList.empty
+    else
+      val head = initial.head
+      val nextState = newNeighborsOnly(neighborsWithHistory(head._1, head._2), explored)
+      head #:: from(initial.tail ++ nextState, explored + head._1)
+
+
+
+
   /** The lazy list of all paths that begin at the starting block.
     */
+
   lazy val pathsFromStart: LazyList[(State, List[Move])] =
-    LazyList.empty // FIX ME
+    val initialPath = (startState, List.empty[Move]) #:: LazyList.empty
+    from(initialPath, Set.empty[State])
+
   /** Returns a lazy list of all possible pairs of the goal block along with the
     * history how it was reached.
     */
   lazy val pathsToGoal: LazyList[(State, List[Move])] =
-    LazyList.empty // FIX ME
+    pathsFromStart.filter(path => path._1.done)
+
   /** The (or one of the) shortest sequence(s) of moves to reach the goal. If
     * the goal cannot be reached, the empty list is returned.
     *
@@ -64,4 +90,4 @@ trait Solver extends GameDef:
     * move that the player should perform from the starting position.
     */
   lazy val solution: List[Move] =
-    List() // FIX ME
+    pathsToGoal.head._2.reverse

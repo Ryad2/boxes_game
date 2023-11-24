@@ -51,7 +51,14 @@ trait StringParserTerrain extends GameDef:
     * `levelVector`.
     */
   def terrainFunction(levelVector: Vector[Vector[Char]]): Pos => Boolean =
-    (pos: Pos) => true // FIX ME
+    case Pos(x, y) =>
+        ! (x < 0 || y < 0)
+        && !(x >= levelVector.length || y >= levelVector(x).length)
+        && levelVector(x)(y) != '-'
+
+
+
+
   /** This function should return the position of character `c` in the terrain
     * described by `levelVector`. You can assume that the `c` appears exactly
     * once in the terrain.
@@ -59,7 +66,12 @@ trait StringParserTerrain extends GameDef:
     * Hint: you can use a for comprehension here. Look at `Seq.zipWithIndex`.
     */
   def findChar(c: Char, levelVector: Vector[Vector[Char]]): Pos =
-    Pos(0, 0) // FIX ME
+    (for
+      x <- levelVector.zipWithIndex
+      y <- x._1.zipWithIndex
+      if y._1 == c
+    yield Pos(x._2, y._2)).head
+  
 
   lazy val vector: Vector[Vector[Char]] =
     Vector(level.split("\r?\n").map(str => Vector(str*)).toIndexedSeq*)
